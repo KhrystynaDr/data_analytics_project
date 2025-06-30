@@ -64,10 +64,10 @@ def open_files(files, event):
     godaddy = convert_to_date_type(godaddy)
 
     events.rename(columns={'event_date': 'Date'}, inplace=True)
-    print(events)
-    for i in events:
-        print(i)
-    # convert_to_date_type_events(events)
+    print(type(events))
+    # for i in events:
+    #     print(i)
+    convert_to_date_type_events(events)
     #ValueError: You are trying to merge on object and datetime64[ns] columns for key 'Date'.
     # If you wish to proceed you should use pd.concat
     # events['Date'] = pd.to_datetime(events['Date'], format="%m-%d-%Y", errors='coerce').dt.date
@@ -75,11 +75,11 @@ def open_files(files, event):
 
 
     # Merge all files on 'date'
-    # merged = wix.merge(shopify, on='Date', how='outer')
-    # merged = merged.merge(godaddy, on='Date', how='outer')
-    # merged = merged.merge(events, on='Date', how='outer')
-    # print(merged.head())
-    # merged.to_csv(path_source + 'aggregate_data.csv', index=False)
+    merged = wix.merge(shopify, on='Date', how='outer')
+    merged = merged.merge(godaddy, on='Date', how='outer')
+    merged = merged.merge(events, on='Date', how='outer')
+    print(merged.head())
+    merged.to_csv(path_source + 'aggregate_data.csv', index=False)
 # ---------------------------------------------------------------------
 
 # ----------------------- TEST CODE -----------------------
@@ -87,7 +87,7 @@ stock_files_of_year, event_file = find_all_files(2020)
 # print(stock_files_of_year)
 # print(event_file)
 
-print(open_files(stock_files_of_year, event_file))
+open_files(stock_files_of_year, event_file)
 #------------------------------------------------------------
 
 '''
