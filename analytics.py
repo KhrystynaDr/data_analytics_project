@@ -1,46 +1,4 @@
-<<<<<<< HEAD
-import csv
-import pandas as pd
-import datetime
-from datetime import datetime, timedelta
 
-path_source = r'C:\Users\khrystynad\Downloads\da_pet_project\\'
-source = "wix_stock_historical_data_2022"
-df = pd.read_csv(path_source + source + '.csv')
-data_dict = df.to_dict(orient='records')
-fieldnames = df.columns.tolist()
-
-# print(type(data_dict[0]['Date']))
-
-#temporary values:
-
-date_info = []
-date_details = {}
-def convert_to_date_type(source):
-    percentage = 0
-    for row in range(len(source)):
-        date_str = source[row]['Date']
-        date_date_type = datetime.strptime(date_str, "%m/%d/%Y").date()
-        percentage = float(data_dict[row]['Change %'].strip('%'))
-        data_dict[row]['Date'] = date_date_type
-        data_dict[row]['Change %'] = percentage
-        # print(type(data_dict[row]['Date']), type(data_dict[row]['Change %']))
-    return data_dict
-
-def compare_info(source):
-    prev_value = None
-    for i in range(len(data_dict)):
-        if i == 0:
-            prev_value = data_dict[i]['Change %']
-        else:
-            if abs(prev_value - data_dict[i]['Change %']) > 10:
-                print("Huge", data_dict[i]['Date'], data_dict[i-1]['Date'], prev_value - data_dict[i]['Change %'])
-# if I can find the dependicies, but how to understand that in other days when the % was not huge, israel did not do anything huge?
-# how to force chatgpt or something shows the news about those dates?
-# divide + >10 and - > 10 groups
-convert_to_date_type(data_dict)
-compare_info(data_dict)
-=======
 import csv
 import os
 
@@ -165,4 +123,3 @@ def compare_info(source):
 convert_to_date_type(data_dict)
 compare_info(data_dict)
 '''
->>>>>>> master
