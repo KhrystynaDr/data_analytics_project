@@ -1,7 +1,5 @@
-
 import csv
 import os
-
 import pandas as pd
 import datetime
 from datetime import datetime, timedelta
@@ -20,7 +18,6 @@ def find_all_files(year):
     for file in os.listdir(path_source):
         if str(year) in file:
             files.append(file)
-            file_name = path_source + file
 
     # get file with events Israel-Palestine of that year
     for event_file in event_files:
@@ -30,16 +27,11 @@ def find_all_files(year):
 
 def convert_to_date_type(source):
     source['Date'] = pd.to_datetime(source['Date'], format="%m/%d/%Y", errors='coerce')
-    # print("Successfully converted to date", source['Date'].dtype)
     return source
 
 
 def convert_to_date_type_events(source):
-    print("Here event", source['Date'], type(source['Date']))
-    # source['Date'] = pd.to_datetime(source['Date'], format="%m-%d-%Y", errors='coerce')
-    source['Date'] = pd.to_datetime(source['Date'], format='mixed')
-
-    print("Successfully converted to event date", source['Date'].dtype)
+    source['Date'] = pd.to_datetime(source['Date'])
     return source
 
 # Load the files
@@ -54,8 +46,10 @@ def open_files(files, event):
         elif 'shopify' in file:
             shopify = pd.read_csv(path_source + file, usecols=columns_to_keep)
     events = pd.read_csv(path_source + event)
+    return wix, godaddy, shopify, events
 
     # Rename columns for consistency
+def rename_fields(wix, godaddy, shopify, events):
     wix.rename(columns={'Change %': 'wix_Change %'}, inplace=True)
     wix = convert_to_date_type(wix)
     shopify.rename(columns={'Change %': 'shopify_Change %'}, inplace=True)
@@ -64,35 +58,61 @@ def open_files(files, event):
     godaddy = convert_to_date_type(godaddy)
 
     events.rename(columns={'event_date': 'Date'}, inplace=True)
-    print(type(events))
-    # for i in events:
-    #     print(i)
     convert_to_date_type_events(events)
-    #ValueError: You are trying to merge on object and datetime64[ns] columns for key 'Date'.
-    # If you wish to proceed you should use pd.concat
-    # events['Date'] = pd.to_datetime(events['Date'], format="%m-%d-%Y", errors='coerce').dt.date
+    return wix, godaddy, shopify, events
 
-
-
+def merge_data(wix, godaddy, shopify, events):
     # Merge all files on 'date'
     merged = wix.merge(shopify, on='Date', how='outer')
     merged = merged.merge(godaddy, on='Date', how='outer')
     merged = merged.merge(events, on='Date', how='outer')
-    print(merged.head())
-    merged.to_csv(path_source + 'aggregate_data.csv', index=False)
+    # merged.to_csv(path_source + 'aggregate_data_final_test1.csv', index=False)
+    return merged
 # ---------------------------------------------------------------------
 
-# ----------------------- TEST CODE -----------------------
-stock_files_of_year, event_file = find_all_files(2020)
-# print(stock_files_of_year)
-# print(event_file)
+def compare_data(final_file):
+    data_dict = final_file.to_dict('records')
+    prev_value = None
+    for i in range(len(data_dict)):
+        try:
+            percentage = float(data_dict[i]['wix_Change %'].strip('%'))
+            # data_dict[i]['wix_Change %'] = percentage
+            # print(type(data_dict[i]['wix_Change %']))
+            # print(data_dict[i]['wix_Change %'])
+        except AttributeError:
+            print("It seems that there is no value")
+        else:
+            pass
+        finally:
+            data_dict[i]['wix_Change %'] = percentage
+            try:
+                if i == 0:
+                    prev_value = data_dict[i]['wix_Change %']
+                else:
+                    if abs(prev_value - data_dict[i]['wix_Change %']) > 10:
+                        print("Huge", data_dict[i]['Date'], data_dict[i - 1]['Date'], prev_value - data_dict[i]['wix_Change %'], data_dict[i]['notes'])
+            except AttributeError:
+                print("It seems that there is no value")
 
-open_files(stock_files_of_year, event_file)
+
+# ----------------------- TEST CODE -----------------------
+stock_files_of_year, event_file = find_all_files(2022)
+wix, godaddy, shopify, events = open_files(stock_files_of_year, event_file)
+wix, godaddy, shopify, events = rename_fields(wix, godaddy, shopify, events)
+merged = merge_data(wix, godaddy, shopify, events)
+compare_data(merged)
+
 #------------------------------------------------------------
 
+
+
 '''
+# ------------------------ LOOP FOR YEARS -------------------------
 # for year in year_list:
 #     stock_files_of_year, event_file = find_all_files(year)
+#     wix, godaddy, shopify, events = open_files(stock_files_of_year, event_file)
+#     wix, godaddy, shopify, events = rename_fields(wix, godaddy, shopify, events)
+#     merged = merge_data(wix, godaddy, shopify, events)
 '''
 
 '''
